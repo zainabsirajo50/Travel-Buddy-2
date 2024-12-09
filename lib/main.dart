@@ -6,6 +6,7 @@ import 'signup.dart';
 import 'login.dart';
 import 'profile_screen.dart';
 import 'homepage_screen.dart';
+import 'itinerary_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,8 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomeScreen(),
         '/profile': (context) => ProfileScreen(),
         '/login': (context) => LoginScreen(auth: FirebaseAuth.instance),
-        '/signup': (context) => SignupScreen(auth: FirebaseAuth.instance),
+        '/signup': (context) => SignUpScreen(),
+        '/itineraries': (context) => ItineraryListScreen(),
       },
     );
   }
@@ -40,7 +42,7 @@ class AuthSelectionScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Authentication'),
+        title: const Text('Travel Buddy'),
         centerTitle: true,
       ),
       body: Padding(
@@ -57,7 +59,7 @@ class AuthSelectionScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => SignupScreen(auth: auth),
+                  builder: (context) => SignUpScreen(),
                 ));
               },
               style: ElevatedButton.styleFrom(
