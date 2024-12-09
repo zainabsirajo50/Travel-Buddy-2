@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'signup.dart';
 import 'login.dart';
+import 'profile_screen.dart';
+import 'homepage_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,8 +19,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Firebase Auth Demo',
-      home: AuthSelectionScreen(),
+      title: 'Travel Buddy',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => AuthSelectionScreen(),
+        '/home': (context) => HomeScreen(),
+        '/profile': (context) => ProfileScreen(),
+        '/login': (context) => LoginScreen(auth: FirebaseAuth.instance),
+        '/signup': (context) => SignupScreen(auth: FirebaseAuth.instance),
+      },
     );
   }
 }
@@ -29,26 +39,45 @@ class AuthSelectionScreen extends StatelessWidget {
     final FirebaseAuth auth = FirebaseAuth.instance;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Authentication')),
-      body: Center(
+      appBar: AppBar(
+        title: const Text('Authentication'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Text(
+              'Welcome to Travel Buddy!',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => SignupScreen(auth: auth),
                 ));
               },
-              child: Text('Sign Up'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.green,
+              ),
+              child: const Text('Sign Up'),
             ),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => LoginScreen(auth: auth),
                 ));
               },
-              child: Text('Login'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.blue,
+              ),
+              child: const Text('Login'),
             ),
           ],
         ),
