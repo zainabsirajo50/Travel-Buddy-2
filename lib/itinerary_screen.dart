@@ -79,9 +79,10 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
                 return ListTile(
                   title: Text(itinerary['title']),
                   subtitle: Text(itinerary['description']),
-                  onTap: () {
-                    // Navigate to itinerary detail screen
-                  },
+                  trailing: IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: () => _addToUserItineraries(itinerary),
+                  ),
                 );
               },
             );
@@ -89,5 +90,29 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _addToUserItineraries(DocumentSnapshot itinerary) async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      try {
+        await _firestore
+            .collection('user_itineraries')
+            .doc(user.uid)
+            .collection('itineraries')
+            .add(itinerary.data() as Map<String, dynamic>);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Itinerary added to your list!')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add itinerary: $e')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('User not logged in.')),
+      );
+    }
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'saved-itineraries.dart';
+import 'buddy-match-screen.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -14,7 +15,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   User? user;
-  final TextEditingController _passwordController = TextEditingController();
   final List<String> _preferences = ['Beach', 'Mountains', 'City'];
   final List<String> _activities = ['Adventure', 'Culture', 'Relaxation'];
 
@@ -74,31 +74,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> _changePassword() async {
-    if (_passwordController.text.isNotEmpty) {
-      try {
-        await user?.updatePassword(_passwordController.text);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Password changed successfully"),
-        ));
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Password change failed: $e"),
-        ));
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Please enter a new password"),
-      ));
-    }
-  }
 
   Future<void> _signOut() async {
     await _auth.signOut();
     Navigator.of(context).pushReplacementNamed('/login');
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -172,16 +154,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
             SizedBox(height: 20),
             Divider(),
-            TextFormField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'New Password',
-              ),
-              obscureText: true,
-            ),
+            SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _changePassword,
-              child: Text('Change Password'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => SavedItinerariesScreen(),
+                  ),
+                );
+              },
+              child: Text('View Saved Itineraries'),
+            ),
+             SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => BuddyMatchScreen(),
+                  ),
+                );
+              },
+              child: Text('View Messages'),
             ),
           ],
         ),
