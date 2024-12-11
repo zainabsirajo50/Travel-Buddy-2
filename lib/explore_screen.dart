@@ -5,12 +5,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class PlacesService {
-  final String apiKey = "AIzaSyBdwY7z9ENsJAy5yoRN9mj_VzfiC0VKxdE";  // Replace with your API Key
+  final String apiKey = "AIzaSyBdwY7z9ENsJAy5yoRN9mj_VzfiC0VKxdE"; // Replace with your API Key
   final String baseUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
 
   Future<List<dynamic>> getNearbyPlaces(double latitude, double longitude) async {
     final String url =
-        "$baseUrl?location=$latitude,$longitude&radius=5000&type=restaurant&key=$apiKey"; // Adjust type as needed
+        "$baseUrl?location=$latitude,$longitude&radius=5000&type=tourist_attraction&key=$apiKey"; // Adjusted type to "tourist_attraction"
 
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -38,7 +38,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   // Default location is set to San Francisco
   late LatLng _currentLocation = _center;
 
-  Set<Marker> _markers = Set<Marker>();  // Set to hold the markers for the places
+  Set<Marker> _markers = Set<Marker>(); // Set to hold the markers for the places
 
   // Called when the map is created
   void _onMapCreated(GoogleMapController controller) {
@@ -50,7 +50,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Future<void> _fetchNearbyPlaces(double latitude, double longitude) async {
     setState(() {
       _isLoading = true;
-      _markers.clear();  // Clear existing markers
+      _markers.clear(); // Clear existing markers
     });
     try {
       List<dynamic> places = await _placesService.getNearbyPlaces(latitude, longitude);
