@@ -60,7 +60,9 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Tailored Itineraries")),
+      appBar: AppBar(
+        title: Text("Tailored Itineraries"),
+      ),
       body: FutureBuilder<List<DocumentSnapshot>>(
         future: _getTailoredItineraries(),
         builder: (context, snapshot) {
@@ -72,18 +74,37 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
             return Center(child: Text("No itineraries available"));
           } else {
             List<DocumentSnapshot> itineraries = snapshot.data!;
-            return ListView.builder(
-              itemCount: itineraries.length,
-              itemBuilder: (context, index) {
-                var itinerary = itineraries[index];
-                return ListTile(
-                  title: Text(itinerary['title']),
-                  subtitle: Text(itinerary['description']),
-                  onTap: () {
-                    // Navigate to itinerary detail screen
-                  },
-                );
-              },
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: itineraries.length,
+                    itemBuilder: (context, index) {
+                      var itinerary = itineraries[index];
+                      return ListTile(
+                        title: Text(itinerary['title']),
+                        subtitle: Text(itinerary['description']),
+                        onTap: () {
+                          // Navigate to itinerary detail screen
+                        },
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/explore');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: Colors.green,
+                    ),
+                    child: const Text('Explore Nearby'),
+                  ),
+                ),
+              ],
             );
           }
         },
