@@ -4,6 +4,7 @@ import UIKit
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
+    GMSServices.provideAPIKey("AIzaSyBdwY7z9ENsJAy5yoRN9mj_VzfiC0VKxdE")
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {

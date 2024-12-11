@@ -8,6 +8,10 @@ import 'profile_screen.dart';
 import 'homepage_screen.dart';
 import 'itinerary_screen.dart';
 import 'explore_screen.dart';
+import 'create_buddy_screen.dart'; 
+import 'chat_Screen.dart';
+import 'buddy_profile_detail.dart';
+import 'buddy_match_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -31,6 +35,9 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => SignUpScreen(),
         '/itineraries': (context) => ItineraryListScreen(),
         '/explore': (context) => ExploreScreen(),
+        '/createBuddy': (context) => CreateBuddyScreen(),
+        '/chat': (context) => ChatScreen(buddyId: ''),
+        '/buddyMatch': (context) => BuddyMatchScreen(),
       },
     );
   }
