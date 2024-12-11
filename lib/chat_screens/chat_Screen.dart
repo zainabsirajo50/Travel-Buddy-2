@@ -14,6 +14,27 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String _currentUserName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserName();
+  }
+
+  void _getUserName() {
+    User? currentUser = _auth.currentUser;
+    if (currentUser != null && currentUser.displayName != null) {
+      setState(() {
+        _currentUserName = currentUser.displayName!;
+      });
+    } else {
+      setState(() {
+        _currentUserName = 'Anonymous';  // Fallback if no display name is set
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -25,26 +46,29 @@ class _ChatScreenState extends State<ChatScreen> {
     if (message.trim().isEmpty) return;
 
     String chatId = _getChatId(widget.buddyId);
-
-    User? currentUser = FirebaseAuth.instance.currentUser;
+    User? currentUser = _auth.currentUser;
     String currentUserId = currentUser?.uid ?? 'unknown';
-    String currentUserName = currentUser?.displayName ?? 'Anonymous';
 
-    // Save the message with the sender's name and the current timestamp
-    await _firestore.collection('chats').doc(chatId).collection('messages').add({
-      'senderId': currentUserId, 
-      'senderName': currentUserName, 
-      'message': message,
-      'timestamp': FieldValue.serverTimestamp(), 
-    });
+    try {
+      // Save the message with the sender's name and the current timestamp
+      await _firestore.collection('chats').doc(chatId).collection('messages').add({
+        'senderId': currentUserId,
+        'senderName': _currentUserName,  // Use the fetched user name here
+        'message': message,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
 
-    _messageController.clear();
+      _messageController.clear();
+    } catch (e) {
+      print('Error sending message: $e');
+      // Optionally show an error to the user
+    }
   }
 
   String _getChatId(String buddyId) {
     // Use a method to generate a unique chat ID for the two users
     // This ensures that both users access the same chat
-    String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown';
+    String currentUserId = _auth.currentUser?.uid ?? 'unknown';
     return currentUserId.compareTo(buddyId) < 0
         ? '$currentUserId-$buddyId'
         : '$buddyId-$currentUserId';
@@ -80,9 +104,31 @@ class _ChatScreenState extends State<ChatScreen> {
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index].data() as Map<String, dynamic>;
-                    return ListTile(
-                      title: Text(message['message']),
-                      subtitle: Text('Sender: ${message['senderName']}'), // Display sender's name
+                    final isSender = message['senderId'] == _auth.currentUser?.uid;
+                    final alignment = isSender ? MainAxisAlignment.end : MainAxisAlignment.start;
+                    final color = isSender ? Colors.blue[200] : Colors.grey[200];
+
+                    return Align(
+                      alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              message['senderName'] ?? 'Unknown',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 5),
+                            Text(message['message']),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );

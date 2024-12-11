@@ -55,10 +55,9 @@ class _BuddyProfileScreenState extends State<BuddyProfileScreen> {
             ),
             const SizedBox(height: 10),
 
-
             // List of selectable interests (for filtering or adding new interests)
             const Text(
-              'Select your interests:',
+              'Your selected interests:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
@@ -68,7 +67,8 @@ class _BuddyProfileScreenState extends State<BuddyProfileScreen> {
               spacing: 10,
               runSpacing: 10,
               children: [
-                'Traveling', 'Photography', 'Music', 'Technology', 'Sports', 'Cooking', 'Gaming', 'Art', 'Reading'
+                'Hiking', 'Beach', 'Camping', 'City Tours', 'Adventure', 'Food',
+    'Photography', 'History', 'Culture', 'Music'
               ]
                   .map((interest) => ChoiceChip(
                         label: Text(interest),
