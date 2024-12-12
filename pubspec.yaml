@@ -38,8 +38,12 @@ dependencies:
   firebase_auth: ^5.3.4
   cloud_firestore: ^5.5.1
   firebase_core: ^3.8.1
-  intl: ^0.18.0 
-  http: ^1.2.2
+  intl: ^0.20.1 
+  google_maps_flutter: ^2.2.0 # For integrating interactive maps to explore nearby attractions
+  geolocator: ^13.0.2 # For location services and getting user's current location
+  http: ^1.2.2 # For making HTTP requests, needed for CurrencyLayer API
+  provider: ^6.1.2 # Updated version of provider
+  geocoding: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -50,7 +54,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

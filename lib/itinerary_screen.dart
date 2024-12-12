@@ -114,69 +114,89 @@ void initState() {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Tailored Itineraries"),
-        actions: [
-          DropdownButton<String>(
-  value: selectedCurrency,
-  items: ['USD', 'EUR', 'GBP'].map((currency) {
-    return DropdownMenuItem(value: currency, child: Text(currency));
-  }).toList(),
-  onChanged: (value) {
-    setState(() {
-      selectedCurrency = value!;
-    });
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text("Tailored Itineraries"),
+      actions: [
+        DropdownButton<String>(
+          value: selectedCurrency,
+          items: ['USD', 'EUR', 'GBP'].map((currency) {
+            return DropdownMenuItem(value: currency, child: Text(currency));
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              selectedCurrency = value!;
+            });
 
-    // Only fetch conversion rate if selected currency differs from USD
-    if (selectedCurrency != "USD") {
-      _fetchConversionRate("USD", selectedCurrency);
-    } else {
-      setState(() {
-        conversionRate = 1.0; // No conversion needed
-      });
-    }
-  },
-),
-        ],
-      ),
-      body: FutureBuilder<List<DocumentSnapshot>>(
-        future: _getTailoredItineraries(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("No itineraries available"));
-          } else {
-            List<DocumentSnapshot> itineraries = snapshot.data!;
-            return ListView.builder(
-              itemCount: itineraries.length,
-              itemBuilder: (context, index) {
-                var itinerary = itineraries[index];
-                double originalBudget = itinerary['budget'] ?? 0.0;
-                double convertedBudget = originalBudget * conversionRate;
+            // Only fetch conversion rate if selected currency differs from USD
+            if (selectedCurrency != "USD") {
+              _fetchConversionRate("USD", selectedCurrency);
+            } else {
+              setState(() {
+                conversionRate = 1.0; // No conversion needed
+              });
+            }
+          },
+        ),
+      ],
+    ),
+    body: Column(
+      children: [
+        Flexible(
+          child: FutureBuilder<List<DocumentSnapshot>>(
+            future: _getTailoredItineraries(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text("Error: ${snapshot.error}"));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text("No itineraries available"));
+              } else {
+                List<DocumentSnapshot> itineraries = snapshot.data!;
+                return ListView.builder(
+                  itemCount: itineraries.length,
+                  itemBuilder: (context, index) {
+                    var itinerary = itineraries[index];
+                    double originalBudget = itinerary['budget'] ?? 0.0;
+                    double convertedBudget = originalBudget * conversionRate;
 
-                return Card(
-                  margin: EdgeInsets.all(8),
-                  elevation: 4,
-                  child: ListTile(
-                    title: Text(itinerary['title']),
-                    subtitle: Text(
-                      "${itinerary['description']}\nBudget: ${convertedBudget.toStringAsFixed(2)} $selectedCurrency",
-                    ),
-                    onTap: () => _navigateToItineraryDetails(itinerary, convertedBudget),
-                  ),
+                    return Card(
+                      margin: EdgeInsets.all(8),
+                      elevation: 4,
+                      child: ListTile(
+                        title: Text(itinerary['title']),
+                        subtitle: Text(
+                          "${itinerary['description']}\nBudget: ${convertedBudget.toStringAsFixed(2)} $selectedCurrency",
+                        ),
+                        onTap: () =>
+                            _navigateToItineraryDetails(itinerary, convertedBudget),
+                      ),
+                    );
+                  },
                 );
-              },
-            );
-          }
-        },
-      ),
-    );
-  }
+              }
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pushNamed('/explore');
+            },
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              backgroundColor: Colors.green,
+            ),
+            child: const Text('Explore Nearby'),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }
 
 class ItineraryDetailsScreen extends StatelessWidget {
