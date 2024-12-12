@@ -12,6 +12,7 @@ import 'saved-itineraries.dart';
 
 class HomeScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
     // Use the _fetchSavedItineraries function from SavedItinerariesScreen
   Future<List<DocumentSnapshot>> _fetchSavedItineraries() async {

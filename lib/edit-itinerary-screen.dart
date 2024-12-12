@@ -170,7 +170,7 @@ class _EditItineraryScreenState extends State<EditItineraryScreen> {
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _saveItineraryChanges,
-                    child: Text('Save Changes'),
+                    child: Text('Add to My List'),
                     style: ElevatedButton.styleFrom(
 
                     ),
