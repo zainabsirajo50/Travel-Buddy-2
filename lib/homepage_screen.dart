@@ -3,18 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'destination_details_screen.dart';
 import 'chat_screens/buddy_match_screen.dart';
-import 'chat_screens/create_buddy_screen.dart';  
+import 'chat_screens/create_buddy_screen.dart';
 import 'package:intl/intl.dart';
 import 'itinerary_screen.dart';
 import 'saved-itineraries.dart';
-
-
 
 class HomeScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-    // Use the _fetchSavedItineraries function from SavedItinerariesScreen
+  // Use the _fetchSavedItineraries function from SavedItinerariesScreen
   Future<List<DocumentSnapshot>> _fetchSavedItineraries() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -81,19 +79,25 @@ class HomeScreen extends StatelessWidget {
 
                 if (userId != null) {
                   // Check if the user has already created a buddy profile
-                  final buddyDoc = await _firestore.collection('travel_buddies').doc(userId).get();
+                  final buddyDoc = await _firestore
+                      .collection('travel_buddies')
+                      .doc(userId)
+                      .get();
 
                   if (buddyDoc.exists) {
                     // If the buddy profile exists, navigate to BuddyMatchScreen
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => BuddyMatchScreen()),  // Navigate to BuddyMatchScreen
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              BuddyMatchScreen()), // Navigate to BuddyMatchScreen
                     );
                   } else {
                     // If the buddy profile does not exist, navigate to CreateBuddyScreen
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CreateBuddyScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => CreateBuddyScreen()),
                     );
                   }
                 }
@@ -117,7 +121,7 @@ class HomeScreen extends StatelessWidget {
                 backgroundColor: Colors.blue,
               ),
               child: const Text('Plan New Trip'),
-            ),            
+            ),
           ],
         ),
       ),
@@ -135,7 +139,8 @@ class HomeScreen extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No featured destinations available.'));
+            return const Center(
+                child: Text('No featured destinations available.'));
           }
 
           return ListView(
@@ -152,7 +157,8 @@ class HomeScreen extends StatelessWidget {
                         destinationName: destination['name'],
                         destinationDescription: destination['description'],
                         destinationImageUrl: destination['image_url'],
-                        destinationActivities: List<String>.from(destination['activities'] ?? []),
+                        destinationActivities:
+                            List<String>.from(destination['activities'] ?? []),
                       ),
                     ),
                   );
@@ -166,7 +172,8 @@ class HomeScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         destination['image_url'] != null
-                            ? Image.network(destination['image_url'], height: 60, fit: BoxFit.cover)
+                            ? Image.network(destination['image_url'],
+                                height: 60, fit: BoxFit.cover)
                             : const SizedBox(height: 60),
                         const SizedBox(height: 10),
                         Text(
@@ -186,9 +193,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-
-   // Saved Itineraries Section
-Widget _buildSavedItineraries() {
+  // Saved Itineraries Section
+  Widget _buildSavedItineraries() {
     return FutureBuilder<List<DocumentSnapshot>>(
       future: _fetchSavedItineraries(),
       builder: (context, snapshot) {
@@ -207,10 +213,12 @@ Widget _buildSavedItineraries() {
               var itinerary = itineraries[index];
               return ListTile(
                 title: Text(itinerary['title'] ?? 'Untitled'),
-                subtitle: Text(itinerary['description'] ?? 'No description available'),
+                subtitle: Text(
+                    itinerary['description'] ?? 'No description available'),
                 onTap: () {
                   // Navigate to itinerary details
-                  Navigator.pushNamed(context, '/itineraryDetails', arguments: itinerary.id);
+                  Navigator.pushNamed(context, '/itineraryDetails',
+                      arguments: itinerary.id);
                 },
               );
             },
