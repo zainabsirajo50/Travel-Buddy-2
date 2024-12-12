@@ -8,6 +8,7 @@ import 'profile_screen.dart';
 import 'homepage_screen.dart';
 import 'itinerary_screen.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => ProfileScreen(),
         '/login': (context) => LoginScreen(auth: FirebaseAuth.instance),
         '/signup': (context) => SignUpScreen(),
-        '/itineraries': (context) => ItineraryListScreen(),
+        '/itineraries': (context) => ItineraryListScreen()
       },
     );
   }

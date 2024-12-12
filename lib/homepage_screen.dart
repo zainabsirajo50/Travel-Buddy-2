@@ -3,10 +3,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'itinerary_screen.dart';
+import 'saved-itineraries.dart';
+
 
 
 class HomeScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+    // Use the _fetchSavedItineraries function from SavedItinerariesScreen
+  Future<List<DocumentSnapshot>> _fetchSavedItineraries() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('user_itineraries')
+          .doc(user.uid)
+          .collection('itineraries')
+          .get();
+      return querySnapshot.docs;
+    }
+    return [];
+  }
 
   HomeScreen({Key? key}) : super(key: key);
 
@@ -54,7 +70,7 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            _buildRecentItineraries(),
+            _buildSavedItineraries(),
 
             const Spacer(),
             ElevatedButton(
@@ -66,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                 backgroundColor: Colors.blue,
               ),
               child: const Text('Plan New Trip'),
-            ),
+            ),            
           ],
         ),
       ),
@@ -142,48 +158,37 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Recent Itineraries Section
-  Widget _buildRecentItineraries() {
-    return Expanded(
-      child: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
-            .collection('itineraries')
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No recent itineraries.'));
-          }
-
-          return ListView(
-            children: snapshot.data!.docs.map((doc) {
-              final itinerary = doc.data() as Map<String, dynamic>;
-              Timestamp? timestamp = itinerary['timestamp'];
-              DateTime? dateTime;
-
-              // Handle Firestore timestamp and format it
-              if (timestamp != null) {
-                dateTime = timestamp.toDate();
-              }
-
+   // Saved Itineraries Section
+Widget _buildSavedItineraries() {
+    return FutureBuilder<List<DocumentSnapshot>>(
+      future: _fetchSavedItineraries(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text("Error: ${snapshot.error}"));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text("No saved itineraries found"));
+        } else {
+          List<DocumentSnapshot> itineraries = snapshot.data!;
+          return ListView.builder(
+            shrinkWrap: true,
+            itemCount: itineraries.length,
+            itemBuilder: (context, index) {
+              var itinerary = itineraries[index];
               return ListTile(
-                title: Text(itinerary['destination'] ?? 'Unknown'),
-                subtitle: Text(
-                  'Planned for: ${dateTime != null ? DateFormat.yMMMd().add_jm().format(dateTime) : 'N/A'}',
-                ),
+                title: Text(itinerary['title'] ?? 'Untitled'),
+                subtitle: Text(itinerary['description'] ?? 'No description available'),
                 onTap: () {
-                  // Navigate to itinerary details screen
-                  Navigator.pushNamed(context, '/itineraryDetails', arguments: doc.id);
+                  // Navigate to itinerary details
+                  Navigator.pushNamed(context, '/itineraryDetails', arguments: itinerary.id);
                 },
               );
-            }).toList(),
+            },
           );
-        },
-      ),
+        }
+      },
     );
   }
 
