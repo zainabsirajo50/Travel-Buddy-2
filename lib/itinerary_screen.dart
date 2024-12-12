@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'edit-itinerary-screen.dart';
 
 class ItineraryListScreen extends StatefulWidget {
   @override
@@ -13,11 +16,14 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
 
   List<String> userPreferences = [];
   List<String> userActivities = [];
+  double conversionRate = 1.0; // Default to 1.0 if no conversion is needed
+  String selectedCurrency = "USD"; // Default currency
 
   @override
   void initState() {
     super.initState();
     _loadUserPreferences();
+    _fetchConversionRate("USD", "EUR"); // Example: Convert USD to EUR
   }
 
   Future<void> _loadUserPreferences() async {
@@ -33,34 +39,79 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
     }
   }
 
+  Future<void> _fetchConversionRate(String fromCurrency, String toCurrency) async {
+    final apiKey = "50be92f27a8503eb74928e77ade2de94"; 
+    final url = "http://api.currencylayer.com/live?access_key=$apiKey&currencies=$toCurrency";
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final rates = data['quotes'];
+        final rateKey = "${fromCurrency}$toCurrency";
+        setState(() {
+          conversionRate = rates[rateKey] ?? 1.0;
+        });
+      } else {
+        throw Exception("Failed to load currency rates");
+      }
+    } catch (e) {
+      print("Error fetching currency rate: $e");
+    }
+  }
+
   Future<List<DocumentSnapshot>> _getTailoredItineraries() async {
-    // Retrieve all itineraries from Firestore
     QuerySnapshot querySnapshot = await _firestore.collection('itineraries').get();
     List<DocumentSnapshot> itineraries = querySnapshot.docs;
 
-    // If no preferences are saved, show all itineraries
     if (userPreferences.isEmpty && userActivities.isEmpty) {
       return itineraries;
     }
 
-    // Filter itineraries based on user preferences and activities
     return itineraries.where((itinerary) {
       List<dynamic> itineraryPreferences = itinerary['preferences'] ?? [];
       List<dynamic> itineraryActivities = itinerary['activities'] ?? [];
 
-      // Match preferences or activities (OR condition)
       bool matchesPreferences = itineraryPreferences.any((pref) => userPreferences.contains(pref));
       bool matchesActivities = itineraryActivities.any((activity) => userActivities.contains(activity));
 
-      // If either preference or activity matches, show the itinerary
       return matchesPreferences || matchesActivities;
     }).toList();
+  }
+
+  void _navigateToItineraryDetails(DocumentSnapshot itinerary, double convertedBudget) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ItineraryDetailsScreen(
+          itinerary: itinerary,
+          convertedBudget: convertedBudget,
+          selectedCurrency: selectedCurrency,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Tailored Itineraries")),
+      appBar: AppBar(
+        title: Text("Tailored Itineraries"),
+        actions: [
+          DropdownButton<String>(
+            value: selectedCurrency,
+            items: ['USD', 'EUR', 'GBP'].map((currency) {
+              return DropdownMenuItem(value: currency, child: Text(currency));
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedCurrency = value!;
+              });
+              _fetchConversionRate("USD", value!); // Convert USD to selected currency
+            },
+          ),
+        ],
+      ),
       body: FutureBuilder<List<DocumentSnapshot>>(
         future: _getTailoredItineraries(),
         builder: (context, snapshot) {
@@ -76,12 +127,18 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
               itemCount: itineraries.length,
               itemBuilder: (context, index) {
                 var itinerary = itineraries[index];
-                return ListTile(
-                  title: Text(itinerary['title']),
-                  subtitle: Text(itinerary['description']),
-                  trailing: IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () => _addToUserItineraries(itinerary),
+                double originalBudget = itinerary['budget'] ?? 0.0;
+                double convertedBudget = originalBudget * conversionRate;
+
+                return Card(
+                  margin: EdgeInsets.all(8),
+                  elevation: 4,
+                  child: ListTile(
+                    title: Text(itinerary['title']),
+                    subtitle: Text(
+                      "${itinerary['description']}\nBudget: ${convertedBudget.toStringAsFixed(2)} $selectedCurrency",
+                    ),
+                    onTap: () => _navigateToItineraryDetails(itinerary, convertedBudget),
                   ),
                 );
               },
@@ -91,28 +148,49 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
       ),
     );
   }
+}
 
-  Future<void> _addToUserItineraries(DocumentSnapshot itinerary) async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      try {
-        await _firestore
-            .collection('user_itineraries')
-            .doc(user.uid)
-            .collection('itineraries')
-            .add(itinerary.data() as Map<String, dynamic>);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Itinerary added to your list!')),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add itinerary: $e')),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('User not logged in.')),
-      );
-    }
+class ItineraryDetailsScreen extends StatelessWidget {
+  final DocumentSnapshot itinerary;
+  final double convertedBudget;
+  final String selectedCurrency;
+
+  ItineraryDetailsScreen({
+    required this.itinerary,
+    required this.convertedBudget,
+    required this.selectedCurrency,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(itinerary['title'])),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              itinerary['description'],
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+            Text("Budget: ${convertedBudget.toStringAsFixed(2)} $selectedCurrency"),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => EditItineraryScreen(itineraryId: itinerary.id),
+  ),
+);
+              },
+              child: Text("Edit Itinerary"),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

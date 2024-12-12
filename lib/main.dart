@@ -7,7 +7,7 @@ import 'login.dart';
 import 'profile_screen.dart';
 import 'homepage_screen.dart';
 import 'itinerary_screen.dart';
-import 'buddy-match-screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,8 +30,7 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => ProfileScreen(),
         '/login': (context) => LoginScreen(auth: FirebaseAuth.instance),
         '/signup': (context) => SignUpScreen(),
-        '/itineraries': (context) => ItineraryListScreen(),
-        '/buddyMatch': (context) => BuddyMatchScreen()
+        '/itineraries': (context) => ItineraryListScreen()
       },
     );
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'saved-itineraries.dart';
-import 'buddy-match-screen.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -166,16 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text('View Saved Itineraries'),
             ),
              SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => BuddyMatchScreen(),
-                  ),
-                );
-              },
-              child: Text('View Messages'),
-            ),
+           
           ],
         ),
       ),

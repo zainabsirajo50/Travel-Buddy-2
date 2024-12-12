@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'itinerary_screen.dart';
+import 'saved-itineraries.dart';
 
 
 
@@ -81,18 +82,7 @@ class HomeScreen extends StatelessWidget {
                 backgroundColor: Colors.blue,
               ),
               child: const Text('Plan New Trip'),
-            ),
-          ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed('/buddyMatch');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Colors.green,
-                    ),
-                    child: const Text('Find Buddy'),
-                  ),
-             
+            ),            
           ],
         ),
       ),
