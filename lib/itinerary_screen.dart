@@ -20,11 +20,12 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
   String selectedCurrency = "USD"; // Default currency
 
   @override
-  void initState() {
-    super.initState();
-    _loadUserPreferences();
-    _fetchConversionRate("USD", "EUR"); // Example: Convert USD to EUR
-  }
+void initState() {
+  super.initState();
+  _loadUserPreferences();
+  // Default conversion rate matches dropdown value
+  _fetchConversionRate("USD", "USD"); // No conversion needed
+}
 
   Future<void> _loadUserPreferences() async {
     User? user = _auth.currentUser;
@@ -40,25 +41,45 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
   }
 
   Future<void> _fetchConversionRate(String fromCurrency, String toCurrency) async {
-    final apiKey = "50be92f27a8503eb74928e77ade2de94"; 
-    final url = "http://api.currencylayer.com/live?access_key=$apiKey&currencies=$toCurrency";
+  if (fromCurrency == toCurrency) {
+    setState(() {
+      conversionRate = 1.0; // No conversion needed if currencies are the same
+    });
+    return;
+  }
 
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+  final apiKey = "50be92f27a8503eb74928e77ade2de94"; 
+  final url = "http://api.currencylayer.com/live?access_key=$apiKey&currencies=$toCurrency";
+
+  try {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      if (data['success'] == true) {
         final rates = data['quotes'];
         final rateKey = "${fromCurrency}$toCurrency";
-        setState(() {
-          conversionRate = rates[rateKey] ?? 1.0;
-        });
+
+        if (rates.containsKey(rateKey) && rates[rateKey] is num) {
+          setState(() {
+            conversionRate = rates[rateKey].toDouble();
+          });
+        } else {
+          throw Exception("Invalid rate key or non-numeric value for $rateKey");
+        }
       } else {
-        throw Exception("Failed to load currency rates");
+        throw Exception("API error: ${data['error']['info']}");
       }
-    } catch (e) {
-      print("Error fetching currency rate: $e");
+    } else {
+      throw Exception("Failed to load currency rates (HTTP ${response.statusCode})");
     }
+  } catch (e) {
+    print("Error fetching currency rate: $e");
+    setState(() {
+      conversionRate = 1.0; // Fallback to 1.0 on error
+    });
   }
+}
 
   Future<List<DocumentSnapshot>> _getTailoredItineraries() async {
     QuerySnapshot querySnapshot = await _firestore.collection('itineraries').get();
@@ -99,17 +120,25 @@ class _ItineraryListScreenState extends State<ItineraryListScreen> {
         title: Text("Tailored Itineraries"),
         actions: [
           DropdownButton<String>(
-            value: selectedCurrency,
-            items: ['USD', 'EUR', 'GBP'].map((currency) {
-              return DropdownMenuItem(value: currency, child: Text(currency));
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedCurrency = value!;
-              });
-              _fetchConversionRate("USD", value!); // Convert USD to selected currency
-            },
-          ),
+  value: selectedCurrency,
+  items: ['USD', 'EUR', 'GBP'].map((currency) {
+    return DropdownMenuItem(value: currency, child: Text(currency));
+  }).toList(),
+  onChanged: (value) {
+    setState(() {
+      selectedCurrency = value!;
+    });
+
+    // Only fetch conversion rate if selected currency differs from USD
+    if (selectedCurrency != "USD") {
+      _fetchConversionRate("USD", selectedCurrency);
+    } else {
+      setState(() {
+        conversionRate = 1.0; // No conversion needed
+      });
+    }
+  },
+),
         ],
       ),
       body: FutureBuilder<List<DocumentSnapshot>>(
