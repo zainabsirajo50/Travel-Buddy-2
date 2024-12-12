@@ -8,10 +8,10 @@ import 'profile_screen.dart';
 import 'homepage_screen.dart';
 import 'itinerary_screen.dart';
 import 'explore_screen.dart';
-import 'create_buddy_screen.dart'; 
-import 'chat_Screen.dart';
-import 'buddy_profile_detail.dart';
-import 'buddy_match_screen.dart';
+import 'chat_screens/create_buddy_screen.dart'; 
+import 'chat_screens/chat_Screen.dart';
+import 'chat_screens/buddy_profile_detail.dart';
+import 'chat_screens/buddy_match_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
