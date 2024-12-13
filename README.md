@@ -9,7 +9,7 @@ The **Travel Buddy App** is a Flutter-based mobile application designed to help 
 ## Submission Links
 
 - **Canva Presentation Link:** : https://www.canva.com/design/DAGZCR28aNs/uSBUXVOdyImMpKzZzKhJBA/edit?utm_content=DAGZCR28aNs&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
-- **YouTube Presentation Link:** : https://www.canva.com/design/DAGZIEttw5s/P57BRRIkXc5gG-PhH7DDFQ/watch?utm_content=DAGZIEttw5s&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h6077c8637e
+- **YouTube Presentation Link:** : https://youtu.be/C-3VWeE0AZw
 
 ---
 
